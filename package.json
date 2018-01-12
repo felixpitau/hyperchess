@@ -1,0 +1,23 @@
+{
+  "name": "hyperchess",
+  "version": "0.1.0",
+  "description": "Hyperchess engine for nodejs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/felixpitau/node-hyperchess.git"
+  },
+  "keywords": [
+    "chess",
+    "game"
+  ],
+  "author": "Austin \"Felix\" Lee (https://github.com/felixpitau)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/felixpitau/node-hyperchess/issues"
+  },
+  "homepage": "https://github.com/felixpitau/node-hyperchess#readme"
+}
