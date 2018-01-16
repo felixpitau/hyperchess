@@ -96,12 +96,12 @@ module.exports = class Game {
                 if (trySquare.piece.side != piece.side) {
                   moves.push(new Move(piece, trySpot));
                 }
-                trySpots = [];
+                break;
               } else {
                 moves.push(new Move(piece, trySpot));
               }
             } else {
-              trySpots = [];
+              break;
             }
           }
         }
@@ -125,8 +125,8 @@ module.exports = class Game {
       if (piece.type == 'pawn') {
         let trySpots = [];
         if (!piece.moved) {
-          let trySpotsSets = Spot.getSpotsFor('pawn double step')[piece.side];
-          while (trySpotsSets.length > 0) {
+          let trySpotSets = Spot.getSpotsFor('pawn double step')[piece.side];
+          while (trySpotSets.length > 0) {
             let trySpotSet = trySpotSets.pop();
             if (!this.board.at(trySpotSet[0]).occupied && !this.board.at(trySpotSet[1]).occupied) {
               moves.push(new Move(piece, trySpotSet[1]));

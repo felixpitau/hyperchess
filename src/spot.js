@@ -294,7 +294,7 @@ module.exports = class Spot {
 
   static getSpotsFor (query) {
     Spot.init();
-    return Object.assign([], Spot.spotSets[query]);
+    return [].concat(Spot.spotSets[query]);
   }
 
 }
