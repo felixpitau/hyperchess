@@ -15,7 +15,6 @@ describe('Spot', () => {
   });
   describe('Spot.getSpotsFor', () => {
     it('should give two spots given query \'pawn step\'', () => {
-      console.log(Spot.getSpotsFor('pawn step'));
       assert.equal(Spot.getSpotsFor('pawn step')[0].length, 2);
     });
     it('should give two spots given query \'pawn double step\'', () => {
