@@ -31,9 +31,9 @@ describe('Board', () => {
       assert.equal(whitePawn.type, 'pawn');
       assert.equal(whitePawn.side, 0);
     });
-    it('should start with the white queen on 1,0,1,0', () => {
+    it('should start with the white king on 1,0,1,0', () => {
       let whiteKing = board.at([1, 0, 1, 0]).piece;
-      assert.equal(whiteKing.type, 'queen');
+      assert.equal(whiteKing.type, 'king');
       assert.equal(whiteKing.side, 0);
     });
   });

@@ -15,7 +15,7 @@ module.exports = class Game {
     ];
     this.pieces = [
       new Piece(0, 'bishop', [1, 0, 0, 0]),
-      new Piece(0, 'queen', [1, 0, 1, 0]),
+      new Piece(0, 'king', [1, 0, 1, 0]),
       new Piece(0, 'king', [1, 0, 2, 0]),
       new Piece(0, 'bishop', [1, 0, 3, 0]),
       new Piece(0, 'pawn', [1, 0, 0, 1]),
@@ -44,7 +44,7 @@ module.exports = class Game {
       new Piece(1, 'pawn', [2, 3, 3, 2]),
       new Piece(1, 'bishop', [2, 3, 0, 3]),
       new Piece(1, 'king', [2, 3, 1, 3]),
-      new Piece(1, 'queen', [2, 3, 2, 3]),
+      new Piece(1, 'king', [2, 3, 2, 3]),
       new Piece(1, 'bishop', [2, 3, 3, 3])
     ];
     this.moves = [];
@@ -76,13 +76,16 @@ module.exports = class Game {
             if (trySquare.occupied) {
               if (trySquare.piece.side != piece.side) {
                 moves.push(new Move(piece, trySpot));
+              } else if (trySquare.piece.type == 'rook'
+                  && !trySquare.piece.moved
+                  && !piece.moved) {
+                moves.push(new Move(piece, trySpot));
               }
             } else {
               moves.push(new Move(piece, trySpot));
             }
           }
         }
-        // TODO: castling
       }
       if (piece.type == 'bishop' || piece.type == 'queen' || piece.type == 'rook') {
         let trySpots = Spot.getSpotsFor(piece.type);
@@ -90,7 +93,7 @@ module.exports = class Game {
         for (let i = 0; i < trySpots.length; i++) {
           while (trySpots[i].length > 0) {
             let trySpot = trySpots[i].pop();
-            let trySquare = this.board.at(trySpot);
+            let trySquare = this.board.at(Spot.add(piece.spot, trySpot));
             if (!trySquare.out) {
               if (trySquare.occupied) {
                 if (trySquare.piece.side != piece.side) {
@@ -110,7 +113,7 @@ module.exports = class Game {
         let trySpots = Spot.getSpotsFor('knight');
         while (trySpots.length > 0) {
           let trySpot = trySpots.pop();
-          let trySquare = this.board.at(trySpot);
+          let trySquare = this.board.at(Spot.add(piece.spot, trySpot));
           if (!trySquare.out) {
             if (trySquare.occupied) {
               if (trySquare.piece.side != piece.side) {
@@ -128,7 +131,8 @@ module.exports = class Game {
           let trySpotSets = Spot.getSpotsFor('pawn double step')[piece.side];
           while (trySpotSets.length > 0) {
             let trySpotSet = trySpotSets.pop();
-            if (!this.board.at(trySpotSet[0]).occupied && !this.board.at(trySpotSet[1]).occupied) {
+            if (!this.board.at(trySpotSet[0]).occupied &&
+                !this.board.at(trySpotSet[1]).occupied) {
               moves.push(new Move(piece, trySpotSet[1]));
             }
           }
