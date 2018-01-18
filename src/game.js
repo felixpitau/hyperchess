@@ -8,7 +8,6 @@ var Spot = require('./spot.js');
 module.exports = class Game {
 
   constructor (whiteName = "white", blackName = "black", description = "") {
-    this.debug = '';
     this.players = [
       new Player(0, whiteName),
       new Player(1, blackName)
@@ -89,7 +88,6 @@ module.exports = class Game {
       }
       if (piece.type == 'bishop' || piece.type == 'queen' || piece.type == 'rook') {
         let trySpots = Spot.getSpotsFor(piece.type);
-        this.debug += ' | ' + piece.type + ' ' + trySpots.length;
         for (let i = 0; i < trySpots.length; i++) {
           while (trySpots[i].length > 0) {
             let trySpot = trySpots[i].pop();
@@ -156,9 +154,45 @@ module.exports = class Game {
         }
         // TODO: en passant and promotion
       }
-      if (piece.type != 'king') {
-        // TODO: check if move puts or keeps king in check
-
+      if (piece.type != 'king'
+          && this.board.at(piece.spot).attacked[piece.side == 0 ? 1 : 0]) {
+        // TODO: check if move puts or keeps king(s) in check
+        let kings = () => {
+          let ks = []
+          for (let p of this.pieces) {
+            if (p.side == piece.side && p.type == 'king') {
+              ks.push(p);
+            }
+          }
+          return ks;
+        }
+        let typesToTest = ['bishop', 'rook'];
+        for (let k = 0; k < kings.length; k++) {
+          for (let j = 0; j < typesToTest.length; j++) {
+            let tryType = typesToTest[j];
+            let trySpots = Spot.getSpotsFor(tryType);
+            for (let i = 0; i < trySpots.length; i++) {
+              while (trySpots[i].length > 0) {
+                let trySpot = trySpots[i].pop();
+                let trySquare = this.board.at(Spot.add(piece.spot, trySpot));
+                if (!trySquare.out) {
+                  if (trySquare.occupied) { // TODO: check that piece in question is the one moving to mark current position as unoccupied and new position as occupied
+                    let tryPiece = trySquare.piece;
+                    if (tryPiece.side != piece.side
+                        && (tryPiece.type == tryType || tryPiece.type == 'queen')) {
+                      tryMove.pop(); // TODO: setup loop to iterate through each possible piece move
+                    }
+                    break;
+                  } else {
+                    // TODO: ???
+                  }
+                } else {
+                  break;
+                }
+              }
+            }
+          }
+        }
       }
     }
     return moves;
