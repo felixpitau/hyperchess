@@ -55,6 +55,14 @@ module.exports = class Game {
     this.board.update(this);
   }
 
+  get lastMove () {
+    if (this.moves.length > 0) {
+      return this.moves[this.moves.length - 1];
+    } else {
+      return null;
+    }
+  }
+
   makeMove (move) {
     throw "Not a valid move!"
     return false;
@@ -71,7 +79,7 @@ module.exports = class Game {
         while (trySpots.length > 0) {
           let trySpot = trySpots.pop();
           let trySquare = this.board.at(trySpot);
-          if (!trySquare.out && !trySquare.attacked[piece.side == 0 ? 1 : 0]) {
+          if (!trySquare.out && !trySquare.attacked[piece.enemySide]) {
             if (trySquare.occupied) {
               if (trySquare.piece.side != piece.side) {
                 moves.push(new Move(piece, trySpot));
@@ -155,7 +163,7 @@ module.exports = class Game {
         // TODO: en passant and promotion
       }
       if (piece.type != 'king'
-          && this.board.at(piece.spot).attacked[piece.side == 0 ? 1 : 0]) {
+          && this.board.at(piece.spot).attacked[piece.enemySide]) {
         // TODO: check if move puts or keeps king(s) in check
         let kings = () => {
           let ks = []

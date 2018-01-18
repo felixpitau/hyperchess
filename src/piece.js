@@ -12,4 +12,8 @@ module.exports = class Piece {
     this.possibleMoves = [];
   }
 
+  get enemySide () {
+    return (this.side == 0 ? 1 : 0);
+  }
+
 }
