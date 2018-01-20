@@ -1,19 +1,17 @@
 module.exports = class Piece {
-
   constructor (side, type, position) {
-    this.side = side;
-    this.type = type;
-    this.spot = position;
-    this.moved = false;
-    this.captured = false;
-    if (type == 'pawn') {
-      this.enpassant = [];
+    this.side = side
+    this.type = type
+    this.spot = position
+    this.moved = false
+    this.captured = false
+    if (type === 'pawn') {
+      this.enpassant = []
     }
-    this.possibleMoves = [];
+    this.possibleMoves = []
   }
 
   get enemySide () {
-    return (this.side == 0 ? 1 : 0);
+    return (this.side === 0 ? 1 : 0)
   }
-
 }

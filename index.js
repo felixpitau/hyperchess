@@ -1,10 +1,10 @@
-var game = require('./src/game.js');
-var move = require('./src/move.js');
-var piece = require('./src/piece.js');
-var player = require('./src/player.js');
-var spot = require('./src/spot.js');
+import game from './src/game'
+import move from './src/move'
+import piece from './src/piece'
+import player from './src/player'
+import spot from './src/spot'
 
-module.exports = {
+export default {
   Game: game,
   Move: move,
   Piece: piece,
