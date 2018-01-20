@@ -1,6 +1,6 @@
 var Square = require('./square')
 
-module.export = class Board {
+module.exports = class Board {
   constructor () {
     this.squares = []
     for (let x = 0; x < 4; x++) {

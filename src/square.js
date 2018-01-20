@@ -1,4 +1,4 @@
-module.expors = class Square {
+module.exports = class Square {
   constructor (spot, piece = null) {
     this.spot = spot
     this.occupied = (piece != null)

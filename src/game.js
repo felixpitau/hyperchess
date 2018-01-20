@@ -4,7 +4,7 @@ var Move = require('./move')
 var Board = require('./board')
 var Spot = require('./spot')
 
-module.export = class Game {
+module.exports = class Game {
   constructor (whiteName = 'white', blackName = 'black', description = '') {
     this.players = [
       new Player(0, whiteName),
