@@ -7,7 +7,7 @@ let board = game.board
 
 /* global describe, it */
 describe('Board', () => {
-  describe('Board.constructor', () => {
+  describe('#constructor()', () => {
     it('should not be empty of squares', () => {
       assert.notEqual(board.squares, [])
     })
@@ -26,7 +26,13 @@ describe('Board', () => {
       }
     })
   })
-  describe('Board.at', () => {
+  describe('#at()', () => {
+    it('should start with a white bishop on 1,0,0,0', () => {
+      let whiteBishop = board.at([1, 0, 0, 0]).piece
+      assert.equal(game.pieces[0], whiteBishop)
+      assert.equal(whiteBishop.type, 'bishop')
+      assert.equal(whiteBishop.side, 0)
+    })
     it('should start with a white pawn on 1,0,0,1', () => {
       let whitePawn = board.at([1, 0, 0, 1]).piece
       assert.equal(whitePawn.type, 'pawn')
