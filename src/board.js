@@ -1,8 +1,9 @@
 var Square = require('./square')
 
 module.exports = class Board {
-  constructor () {
+  constructor (game) {
     this.squares = []
+    this.squareList = []
     for (let x = 0; x < 4; x++) {
       this.squares[x] = []
       for (let y = 0; y < 4; y++) {
@@ -10,19 +11,30 @@ module.exports = class Board {
         for (let a = 0; a < 4; a++) {
           this.squares[x][y][a] = []
           for (let b = 0; b < 4; b++) {
-            this.squares[x][y][a][b] = new Square([x, y, a, b])
+            let square = new Square([x, y, a, b])
+            this.squares[x][y][a][b] = square
+            this.squareList.push(square)
           }
         }
       }
     }
+    this.game = game
   }
 
-  update (game) {
-    for (let piece of game.pieces) {
-      this.at(piece.spot).piece = piece
+  update () {
+    for (let piece of this.game.pieces) {
+      this.at(piece.spot).piece = piece.captured ? null : piece
     }
-    for (let piece of game.pieces) {
-      piece.possibleMoves = game.possibleMoves(piece)
+    for (let piece of this.game.pieces) {
+      let possibleMoves = this.game.possiblePreliminaryMoves(piece)
+      piece.possibleMoves = possibleMoves.filter(piece => this.game.checkFilter)
+    }
+    this.game.players[0].possibleMoves = []
+    this.game.players[1].possibleMoves = []
+    for (let piece of this.game.pieces) {
+      for (let move of piece.possibleMoves) {
+        this.game.players[piece.side].possibleMoves.push(move)
+      }
     }
   }
 

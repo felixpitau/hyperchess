@@ -1,7 +1,7 @@
 module.exports = class Square {
   constructor (spot, piece = null) {
     this.spot = spot
-    this.occupied = (piece != null)
+    this.occupied = (piece !== null)
     this._piece = piece
     this.attacked = [false, false]
     this.out = false
@@ -12,7 +12,7 @@ module.exports = class Square {
   }
 
   set piece (piece) {
-    this.occupied = (piece != null)
+    this.occupied = (piece !== null)
     this._piece = piece
   }
 }

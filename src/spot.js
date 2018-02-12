@@ -3,6 +3,21 @@ module.exports = class Spot {
     return [spot1[0] + spot2[0], spot1[1] + spot2[1], spot1[2] + spot2[2], spot1[3] + spot2[3]]
   }
 
+  static equals (spot1, spot2) {
+    return (spot1[0] === spot2[0] &&
+        spot1[1] === spot2[1] &&
+        spot1[2] === spot2[2] &&
+        spot1[3] === spot2[3])
+  }
+
+  static sub (spot1, spot2) {
+    return [spot1[0] - spot2[0], spot1[1] - spot2[1], spot1[2] - spot2[2], spot1[3] - spot2[3]]
+  }
+
+  static div (spot1, spot2) {
+    return [spot1[0] / spot2[0], spot1[1] / spot2[1], spot1[2] / spot2[2], spot1[3] / spot2[3]]
+  }
+
   static init () {
     if (Spot.spotSets == null) {
       Spot.spotSets = {
@@ -275,10 +290,32 @@ module.exports = class Spot {
           ]
         ],
         'king': [
+          [-1, 0, 0, 0],
+          [0, -1, 0, 0],
+          [0, 0, -1, 0],
+          [0, 0, 0, -1],
           [1, 0, 0, 0],
           [0, 1, 0, 0],
           [0, 0, 1, 0],
           [0, 0, 0, 1],
+          [-1, 1, 0, 0],
+          [-1, 0, 1, 0],
+          [-1, 0, 0, 1],
+          [0, -1, 1, 0],
+          [0, -1, 0, 1],
+          [0, 0, -1, 1],
+          [1, -1, 0, 0],
+          [1, 0, -1, 0],
+          [1, 0, 0, -1],
+          [0, 1, -1, 0],
+          [0, 1, 0, -1],
+          [0, 0, 1, -1],
+          [-1, -1, 0, 0],
+          [-1, 0, -1, 0],
+          [-1, 0, 0, -1],
+          [0, -1, -1, 0],
+          [0, -1, 0, -1],
+          [0, 0, -1, -1],
           [1, 1, 0, 0],
           [1, 0, 1, 0],
           [1, 0, 0, 1],
@@ -288,7 +325,20 @@ module.exports = class Spot {
         ]
       }
       Spot.spotSets['queen'] = Spot.spotSets['bishop'].concat(Spot.spotSets['rook'])
+      Spot.spotSets['check'] = []
+      for (let set in Spot.spotSets['queen']) {
+        for (let line in set) {
+          Spot.spotSets['check'] = Spot.spotSets['check'].concat(line)
+        }
+      }
+      for (let spot in Spot.spotSets['knight']) {
+        Spot.spotSets['check'] = Spot.spotSets['check'].concat(spot)
+      }
     }
+  }
+
+  static enpassant (originalSpot, newSpot) {
+    return Spot.add(originalSpot, Spot.div(Spot.sub(newSpot, originalSpot), [1, 2, 1, 2]))
   }
 
   static getSpotsFor (query) {

@@ -44,49 +44,98 @@ module.exports = class Game {
       new Piece(1, 'king', [2, 3, 2, 3]),
       new Piece(1, 'bishop', [2, 3, 3, 3])
     ]
-    this.moves = []
-    this.check = false
-    this.mate = false
-    this.turn = 0
-    this.description = description
-    this.board = new Board()
-    this.board.update(this)
-  }
-
-  get lastMove () {
-    if (this.moves.length > 0) {
-      return this.moves[this.moves.length - 1]
+    for (let piece of this.pieces) {
+      this.players[piece.side].pieces.push(piece)
     }
-    return null
+    this.moves = []
+    this.description = description
+    this.board = new Board(this)
+    this.board.update()
   }
 
-  makeMove (move) {
-    // throw "Not a valid move!"
-    return false
+  checkFilter (move) {
+    let kings = [[], []]
+    let underAttack = [false, false]
+    for (let piece in this.pieces) {
+      if (piece.type === 'king') {
+        kings[piece.side].push(piece)
+      }
+    }
+    for (let i in [0, 1]) {
+      let side = (i === 0 ? move.piece.side : move.piece.enemySide)
+      let enemySide = (side === 0 ? 1 : 0)
+      for (let king in kings[side]) {
+        if (underAttack[i]) {
+          break
+        }
+        let trySpot = (spot, typeFilter) => {
+          let trySquare = this.board.at(Spot.add(king.spot, spot))
+          if (!trySquare.occupied || (trySquare.occupied && move.fromSpot === spot)) {
+            return
+          }
+          let piece
+          if (trySquare.occupied) {
+            piece = trySquare.piece
+          }
+          if (!trySquare.occupied && move.toSpot === spot) {
+            piece = move.piece
+          }
+          if (piece.side === enemySide && typeFilter(piece)) {
+            underAttack[i] = true
+          }
+        }
+        for (let type in ['rook', 'bishop']) {
+          let paths = Spot.getSpotsFor(type)
+          for (let path in paths) {
+            for (let spot in path) {
+              trySpot(spot, piece => piece.type === type || piece.type === 'queen')
+            }
+          }
+        }
+        let spots = Spot.getSpotsFor('pawn')[enemySide]
+        for (let spot in spots) {
+          trySpot(spot, piece => piece.type === 'pawn')
+        }
+        for (let type in ['knight', 'king']) {
+          spots = Spot.getSpotsFor(type)
+          for (let spot in spots) {
+            trySpot(spot, piece => piece.type === type)
+          }
+        }
+      }
+    }
+    let turn = this.turn
+    if (underAttack[turn]) {
+      return false
+    }
+    if (underAttack[turn === 0 ? 1 : 0]) {
+      move.check = true
+      return true
+    }
   }
 
-  possibleMoves (piece) {
+  possiblePreliminaryMoves (piece) {
     let moves = []
     if (piece.constructor.name === 'Piece') {
-      if (piece.side !== this.turn) {
+      if (piece.side !== this.turn || piece.captured) {
         return []
       }
       if (piece.type === 'king') {
         let trySpots = Spot.getSpotsFor('king')
         while (trySpots.length > 0) {
           let trySpot = trySpots.pop()
-          let trySquare = this.board.at(trySpot)
-          if (!trySquare.out && !trySquare.attacked[piece.enemySide]) {
+          let trySquare = this.board.at(Spot.add(piece.spot, trySpot))
+          if (!trySquare.out) {
             if (trySquare.occupied) {
               if (trySquare.piece.side !== piece.side) {
-                moves.push(new Move(piece, trySpot))
+                moves.push(new Move(piece, trySquare.spot, {capture: true, capturedPiece: trySquare.piece}))
               } else if (trySquare.piece.type === 'rook' &&
-                  !trySquare.piece.moved &&
-                  !piece.moved) {
-                moves.push(new Move(piece, trySpot))
+                  trySquare.piece.moved === 0 &&
+                  piece.moved === 0) {
+                moves.push(new Move(piece, trySquare.spot, {castle: true}))
               }
             } else {
-              moves.push(new Move(piece, trySpot))
+              moves.push(new Move(piece, trySquare.spot))
             }
           }
         }
@@ -95,16 +144,16 @@ module.exports = class Game {
         let trySpots = Spot.getSpotsFor(piece.type)
         for (let i = 0; i < trySpots.length; i++) {
           while (trySpots[i].length > 0) {
-            let trySpot = trySpots[i].pop()
+            let trySpot = trySpots[i].shift()
             let trySquare = this.board.at(Spot.add(piece.spot, trySpot))
             if (!trySquare.out) {
               if (trySquare.occupied) {
                 if (trySquare.piece.side !== piece.side) {
-                  moves.push(new Move(piece, trySpot))
+                  moves.push(new Move(piece, trySquare.spot, {capture: true, capturedPiece: trySquare.piece}))
                 }
                 break
               } else {
-                moves.push(new Move(piece, trySpot))
+                moves.push(new Move(piece, trySquare.spot))
               }
             } else {
               break
@@ -120,91 +169,70 @@ module.exports = class Game {
           if (!trySquare.out) {
             if (trySquare.occupied) {
               if (trySquare.piece.side !== piece.side) {
-                moves.push(new Move(piece, trySpot))
+                moves.push(new Move(piece, trySquare.spot, {capture: true, capturedPiece: trySquare.piece}))
               }
             } else {
-              moves.push(new Move(piece, trySpot))
+              moves.push(new Move(piece, trySquare.spot))
             }
           }
         }
       }
       if (piece.type === 'pawn') {
         let trySpots = []
-        if (!piece.moved) {
+        if (piece.moved === 0) {
           let trySpotSets = Spot.getSpotsFor('pawn double step')[piece.side]
           while (trySpotSets.length > 0) {
             let trySpotSet = trySpotSets.pop()
-            if (!this.board.at(trySpotSet[0]).occupied &&
-                !this.board.at(trySpotSet[1]).occupied) {
-              moves.push(new Move(piece, trySpotSet[1]))
+            if (!this.board.at(Spot.add(piece.spot, trySpotSet[0])).occupied &&
+                !this.board.at(Spot.add(piece.spot, trySpotSet[1])).occupied) {
+              moves.push(new Move(piece, Spot.add(piece.spot, trySpotSet[1])))
             }
           }
         }
         trySpots = Spot.getSpotsFor('pawn step')[piece.side]
         while (trySpots.length > 0) {
           let trySpot = trySpots.pop()
-          if (!this.board.at(trySpot).occupied) {
-            moves.push(new Move(piece, trySpot))
+          let trySquare = this.board.at(Spot.add(piece.spot, trySpot))
+          if (!trySquare.occupied) {
+            moves.push(new Move(piece, trySquare.spot))
           }
         }
         trySpots = Spot.getSpotsFor('pawn capture')[piece.side]
         while (trySpots.length > 0) {
           let trySpot = trySpots.pop()
-          let trySquare = this.board.at(trySpot)
+          let trySquare = this.board.at(Spot.add(piece.spot, trySpot))
           if (trySquare.occupied &&
               !trySquare.out &&
               trySquare.piece.side !== piece.side) {
-            moves.push(new Move(piece, trySpot))
+            moves.push(new Move(piece, trySquare.spot, {capture: true, capturedPiece: trySquare.piece}))
           }
         }
+
         // TODO: en passant and promotion
-      }
-      // [ SEE IF KINGS ARE IN CHECK ]
-      // TODO: check if move puts or keeps king(s) in check
-      for (let tryMove of moves) {
-        if (piece.type !== 'king' &&
-            (this.board.at(piece.spot).attacked[piece.enemySide] ||
-            (this.check && this.board.at(tryMove.spot).attacked[piece.enemySide]))) {
-          let kings = () => {
-            let ks = []
-            for (let p of this.pieces) {
-              if (p.side === piece.side && p.type === 'king') {
-                ks.push(p)
-              }
-            }
-            return ks
-          }
-          let typesToTest = ['bishop', 'rook']
-          for (let k = 0; k < kings.length; k++) {
-            for (let j = 0; j < typesToTest.length; j++) {
-              let tryType = typesToTest[j]
-              let trySpots = Spot.getSpotsFor(tryType)
-              for (let i = 0; i < trySpots.length; i++) {
-                while (trySpots[i].length > 0) {
-                  let trySpot = trySpots[i].pop()
-                  let trySquare = this.board.at(Spot.add(piece.spot, trySpot))
-                  if (!trySquare.out) {
-                    if (trySquare.occupied) { // TODO: check that piece in question is the one moving to mark current position as unoccupied and new position as occupied
-                      let tryPiece = trySquare.piece
-                      if (tryPiece.side !== piece.side &&
-                          (tryPiece.type === tryType || tryPiece.type === 'queen')) {
-                        tryMove.pop() // TODO: setup loop to iterate through each possible piece move
-                      }
-                      break
-                    } else {
-                      // TODO: ???
-                    }
-                  } else {
-                    break
-                  }
-                }
-              }
-            }
-          }
-        }
       }
     }
     return moves
+  }
+
+  makeMove (move) {
+    if (move === null) return false
+    let lastMove = this.lastMove
+    let piece = move.piece
+    if (move.capture) {
+      if (move.enpassant) {
+        lastMove.piece.captured = true
+      } else {
+        this.board.at(move.toSpot).piece.captured = true
+      }
+    }
+    if (move.castle) {
+      this.board.at(move.fromSpot).piece = this.board.at(move.toSpot).piece
+      this.board.at(move.toSpot).piece = piece
+    }
+    piece.spot = move.toSpot
+    piece.moved++
+    this.moves.push(move)
+    this.board.update()
   }
 
   undo () {
@@ -214,5 +242,38 @@ module.exports = class Game {
         this.pieces.push(lastMove.capturedPiece)
       }
     }
+  }
+
+  get turn () {
+    return (this.moves.length % 2)
+  }
+
+  get check () {
+    if (this.moves.length > 0) {
+      return this.lastMove.check
+    }
+    return false
+  }
+
+  get mate () {
+    if (this.moves.length > 0) {
+      return this.lastMove.checkmate
+    }
+    return false
+  }
+
+  get lastMove () {
+    if (this.moves.length > 0) {
+      return this.moves[this.moves.length - 1]
+    }
+    return null
+  }
+
+  get playDescription () {
+    let desc = this.players[0].name + ' as white versus ' + this.players[1].name + ' as black\n'
+    for (let move of this.moves) {
+      desc += move.description + '\n'
+    }
+    return desc
   }
 }
