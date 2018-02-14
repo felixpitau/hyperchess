@@ -137,6 +137,7 @@ module.exports = class Game {
             } else {
               moves.push(new Move(piece, trySquare.spot))
             }
+            trySquare.attacked[piece.side] = true
           }
         }
       }
@@ -155,6 +156,7 @@ module.exports = class Game {
               } else {
                 moves.push(new Move(piece, trySquare.spot))
               }
+              trySquare.attacked[piece.side] = true
             } else {
               break
             }
@@ -174,6 +176,7 @@ module.exports = class Game {
             } else {
               moves.push(new Move(piece, trySquare.spot))
             }
+            trySquare.attacked[piece.side] = true
           }
         }
       }
@@ -205,6 +208,7 @@ module.exports = class Game {
               !trySquare.out &&
               trySquare.piece.side !== piece.side) {
             moves.push(new Move(piece, trySquare.spot, {capture: true, capturedPiece: trySquare.piece}))
+            trySquare.attacked[piece.side] = true
           }
         }
 
@@ -216,14 +220,13 @@ module.exports = class Game {
 
   makeMove (move) {
     if (move === null) return false
-    let lastMove = this.lastMove
+    if (!move.piece.possibleMoves.some(possibleMove => possibleMove === move)) {
+      return false
+    }
+    // let lastMove = this.lastMove
     let piece = move.piece
     if (move.capture) {
-      if (move.enpassant) {
-        lastMove.piece.captured = true
-      } else {
-        this.board.at(move.toSpot).piece.captured = true
-      }
+      move.capturedPiece.capture = true
     }
     if (move.castle) {
       this.board.at(move.fromSpot).piece = this.board.at(move.toSpot).piece
@@ -233,6 +236,7 @@ module.exports = class Game {
     piece.moved++
     this.moves.push(move)
     this.board.update()
+    return true
   }
 
   undo () {

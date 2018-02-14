@@ -22,6 +22,10 @@ module.exports = class Board {
   }
 
   update () {
+    for (let square of this.squareList) {
+      square.attacked = [false, false]
+      square.piece = null
+    }
     for (let piece of this.game.pieces) {
       this.at(piece.spot).piece = piece.captured ? null : piece
     }
@@ -35,6 +39,9 @@ module.exports = class Board {
       for (let move of piece.possibleMoves) {
         this.game.players[piece.side].possibleMoves.push(move)
       }
+    }
+    if (this.game.players[this.game.turn].possibleMoves < 1) {
+      this.game.lastMove.mate = true
     }
   }
 
