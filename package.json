@@ -1,7 +1,7 @@
 {
   "name": "hyperchess",
-  "version": "0.1.0",
-  "description": "Hyperchess engine for nodejs",
+  "version": "0.1.1",
+  "description": "The core engine to a four dimensional chess game",
   "main": "index.js",
   "scripts": {
     "test": "mocha"

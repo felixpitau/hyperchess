@@ -226,7 +226,7 @@ module.exports = class Game {
     // let lastMove = this.lastMove
     let piece = move.piece
     if (move.capture) {
-      move.capturedPiece.capture = true
+      move.capturedPiece.captured = true
     }
     if (move.castle) {
       this.board.at(move.fromSpot).piece = this.board.at(move.toSpot).piece
