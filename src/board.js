@@ -31,7 +31,7 @@ module.exports = class Board {
     }
     for (let piece of this.game.pieces) {
       let possibleMoves = this.game.possiblePreliminaryMoves(piece)
-      piece.possibleMoves = possibleMoves.filter(piece => this.game.checkFilter)
+      piece.possibleMoves = possibleMoves.filter(move => this.game.checkFilter(move))
     }
     this.game.players[0].possibleMoves = []
     this.game.players[1].possibleMoves = []
@@ -40,7 +40,7 @@ module.exports = class Board {
         this.game.players[piece.side].possibleMoves.push(move)
       }
     }
-    if (this.game.players[this.game.turn].possibleMoves < 1) {
+    if (this.game.players[this.game.turn].possibleMoves < 1 && this.game.moves.length > 0) {
       this.game.lastMove.mate = true
     }
   }
